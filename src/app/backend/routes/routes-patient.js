@@ -1,12 +1,16 @@
-const express = require('express');   
-const router = express.Router();  
-
-router.get('/',
-    (req, res) => res.status(200).send('traigo la lista de pacientes')
-);
-
-router.get('/new',
-    (req, res) => res.status(200).send('creo un nuevo paciente')
-    );
-
-module.exports = router;  //exportamos el router
+const { createPatient, getPatients, getPatient,
+    updatePatient, deletePatient} = require('../controllers/patient')
+ const {Router} = require("express")
+ 
+ const router = Router();
+ 
+ router
+   .post("/", createPatient)
+   .get("/", getPatients)
+   .get("/:id", getPatient)
+   .put("/:id", updatePatient)
+   .delete("/:id", deletePatient)
+   //.get("/:id/fallecido")
+   //.patch()
+ 
+ module.exports = router;
