@@ -2,6 +2,14 @@
 
 Ejemplo de aplicación full-stack con Mongo, Express, Angular y Node. En este tutorial construiremos una aplicación que utiliza como servidor, Express ejecutado desde Node, como base de datos, Node y como FrontEnd Angular.
 
+## Reconocimientos
+
+Aunque el desarrollo me lo he currado yo solito y el texto aun más y han sido unas cuantas horas, es justo reconocer que buena parte del código, de hecho la mayor parte, sale de las fántasticas clases que nos está dando Nuestro profe Alfonso Tienda, dentro del curso patrocinado por la ONCE en Valencia para formar programadores de aplicaciones web. Alfonso es un mágnifico profesor, que dado su nivel de conocimientos, sinceramente aún no sé como pierde el tiempo con nosotros. Lo cierto es que ha cogido a unos cuantos ignorantes de la programación y en apenas unos meses, nos está llevando a unos niveles que, creo, se empiezan a acercar a la profesionalidad, aunque sea a nivel junior.
+
+Así que desde aquí mi más sincero agradecimiento a Alfonso por su generosidad y a la ONCE por ofrecernos esta increible oportunidad. No quisiera parecer demasiado adulador y obsequioso, pero, en el supuesto caso de que esta guia pueda servir para algo, creo que es justo reconocer esta deuda contraida. 
+
+Y sin más vamos al turrón.
+
 ## El Backend
 
 El supuesto es que hacemos una aplicación que maneja datos de pacientes de un hospital. Para no complicarnos demasiado, en esta base de datos vamos a guardar solo el nombre, apellidos y un array de patologías que sufre el paciente. Representado esto como un json sería:
