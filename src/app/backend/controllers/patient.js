@@ -4,7 +4,8 @@ const Patient = require('../models/patient');
 const patientController = {
     //obtiene todos los pacientes
     getPatients: (req, res) => {
-        Patient.find(
+      console.log(req.body.name);
+        Patient.find({name:req.body.name}, 
             (err, patients) => {
                 return err ? res.status(500).send(err) : res.status(200).jsonp(patients)
             }

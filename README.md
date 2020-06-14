@@ -37,7 +37,7 @@ ng new mean-completo
 
 Cuando pregunte le diremos que sí vamos a utilizar router y usaremos css plano.
 
-Más cosas que necesitaremos. 
+Más cosas que necesitaremos.
 
 Lo primero es Mongo, en mi caso voy a utilizar un mongo que tengo instalado en docker. La instalación de mongo no es parte de estos apuntes y mucho menos el uso de docker, pero es fácil encontrar documentación. Sin embargo para efectos de esta aplicación, la elección de mongo en docker es extremadamente sencilla. Solo necesitamos instalar docker y el pluguin de docker para visual studio code. una vez instalado docker, lo ponemos en marcha y después desde consola hacemos:
 
@@ -357,9 +357,49 @@ module.exports = patientController
 
  No voy a adentrarme en el funcionamiento de mongo, para eso ya hay un montón de manuales y tutoriales en internet. Lo que si me interesa comentar es que mongo es una base de datos documental, o dicho llanamente, almacena documentos. Estos documentos en última instancia son objetos json que pueden tener toda la complejidad que se quiera peor a fin de cuentas son json. Dicho en forma simplista, mongo en sus bases de datos almacena colecciones, que harían, dicho sea con muchas reservas, las funciones de una tabla de una base de datos clásica. Y dentro de las colecciones se guardan los mencionados documentos. Esto es repito, de forma muy simplificada como funcionamongo. Para este ejercicio ya he comentadoo que utilizaré una base de datos que llamo *hospital* y que ya hemos visto que conectabamos en server.js y que en principio no es necesario que esté creada previamente.
 
- Como podemos ver en el código del controller, lo primero que hacemos es traernos el modelo de datos y lo guardamos en una clase Patient, recordemos que el modelo de datos era un esquema mongo y esto forma parte de la magia de todo esto ya que solo por esto ya sabe que la colección con la que tiene que tratar es **patients**, es decir que mongoose el solito transforma el nombre del modelo de datos que le demos en una colección poniendo el nombre en plural, así que ojo con los nombres que le ponemos porque el plural puede tener sentido o  no.
+ Como podemos ver en el código del controller, lo primero que hacemos es traernos el modelo de datos y lo guardamos en *Patient*, recordemos que el modelo de datos era un esquema mongo y esto forma parte de la magia de todo esto ya que solo por esto ya sabe que la colección con la que tiene que tratar es **patients**, es decir que mongoose el solito transforma el nombre del esquema de datos que le demos en una colección poniendo el nombre en minúsculas y añadiendo una 's' al final, así que ojo con los nombres que le ponemos porque el resultado puede tener sentido o no, aunque en realidad el nombre que le de a la collección no tiene mayor importancia que lo raro que nos pueda resultar un nombre mal elegido. En cualquier caso mongoose nos permitedefinir explícitamente el nombre de la colección.
 
-Si hacemos memoria recordaremos que en */routes/routes-patient.js* solo teniamos definidas rutas para los dos primeros así que hay que crear una nueva para el resto de métodos. Por otra parte también hay que modificar las otras dos rutas para que hagan más cosas y no solo devolver un mensaje de texto. Para ello debemos importar el controlador y poner en cada ruta el método correspondiente como función de callback, además vamos a traernos los métodos del controller como módulos y no el objeto entero, funciona exáctamente igual, pero queda más elegante:
+ Bueno, ya sabemos que todo se hace a través de este objeto 'Patient' que hemos creado y que es un esquema mongoose, pero ¿como se hacen las operaciones? Pues a traves del propio 'Patient'. Este objeto además de conocer el modelo de datos, incorpora todos los métodos que se necesitan para consultar, guardar, editar y borrar documentos de mongo dentro de la colección correspondiente. Si continuamos con el código del controller vemos que despues de importar el esquema *Patient* definimos lo que es el controller en realidad, que no es más que un json de métodos, algo así:
+
+ ```js
+ const miController= {
+     metodo1: (req,res)=>{código...},
+     metodo2: (req, res)=>{código...},
+     ....
+ }
+
+ ```
+
+ Por ejemplo, la primera función que se ha creado en el controlador ```getPatients```, invoca al método *find* que recupera todos los documentos de la colección 'patients'. Este es el caso más sencillo. El método envía dos parámetros 'req' y 'res', el primero es el objeto que se pasa al método y que podemos utilizar para pasar toda clase de parámetros, el segundo 'res' es donde se devolverá la respuesta. En el código que tenemos actualmente al hacer ```Patient.find``` se ejecuta una función de callback que devuelve la lista de pacientes (patients) si todo va bien, o un error (err) si hay algún problema. La respuesta de callback es un operador ternario que nos manda un status 500 y el error en caso de que exista 'err' o en caso contrario, nos devuelve un status 200 y, muy importante, la lista de pacientes en formato json (```.jsonp(patients)```).
+ 
+ en este método podríamos haber utilizado 'req' para pasar un filtro de lo que queremos buscar, ya que una de las cosas que incluye req es el body de la petición le podríamos haber pasado un json para que filtrara por el nombre, por ejemplo, Es decir si en el body de la petición GET le pasamos:
+ 
+ ```json
+ {
+     "name":"John"
+ }
+ ```
+
+ podemos utilizar 'req' para que filtre el resultado de la siguiente forma:
+
+ ```js
+     getPatients: (req, res) => {
+      console.log(req.body.name);
+        Patient.find({name:req.body.name},
+            (err, patients) => {
+                return err ? res.status(500).send(err) : res.status(200).jsonp(patients)
+            }
+        )
+    },
+```
+
+Fijate en que el parámetro que le pasamos a 'find' es un json ```{name: req.body.name}```
+
+Esta es la mecánica para todos los métodos del controller, para crear un nuevo documento le pasamos como parámetro un patient que creamos con lo que le mandamos en el body de la petición POST, para ver un solo paciente lo hacemos con 'findById' que también pertenece a mongoose; el 'id' se lo pasamos mediante la url y lo recuperamos con req.param.idy de forma similar hacemos para borrar un documento de 'patients' pero con 'remove()' evidentemente con el correspondiente control de errores.
+
+Para profundizar con todo esto se puede consultar la documentación de [mongoose](https://mongoosejs.com/docs/guide.html)
+
+Qhe viene ahora. Si hacemos memoria recordaremos que en */routes/routes-patient.js* solo teniamos definidas rutas para los dos primeros así que hay que crear una nueva para el resto de métodos. Por otra parte también hay que modificar las otras dos rutas para que hagan más cosas y no solo devolver un mensaje de texto. Para ello debemos importar el controlador y poner en cada ruta el método correspondiente como función de callback, además vamos a traernos los métodos del controller como módulos y no el objeto entero, funciona exáctamente igual, pero queda más elegante:
 
 - /routes/routes-patient.js
 
@@ -404,7 +444,9 @@ module.exports=app;
 
 En esta versión he eliminado /routes/routes.js y sus rutas porque ya solo eran para explicar el tema de las rutas y ya no nos hacen falta.
 
-Ahora sí, si desde postman le haces un post a ```localhost:4000/pacientes/``` y en el body le metes un json como por ejemplo:
+Respecto a esto, hay que decir que el uso de un archivo de rutas como './routes/rotes-patient' no es estrictamente necesario, se podrían indicar directamente en la aplicación y ahorranos eel archivo y la llamada. El hecho de utilizarlo es simplemente una cuestión de orden; cuando solo tenemos unas pocas rutas no pasa nada, pero en una aplicación del mundo real el número de rutas puede ser muy grande y es mejor tenerlo todo ordenado y en su sitio. Todo es cuestión de buenas prácticas.
+
+Y ahora sí que sí, vamos a comprobar que toda esta movida funciona. Abrimos postman  y le haces un post a ```localhost:4000/pacientes/``` poniendole en el body un json con los datos que quieres guardar en la base de datos; como por ejemplo lo siguiente:
 
 ```json
 {
@@ -418,15 +460,15 @@ Ahora sí, si desde postman le haces un post a ```localhost:4000/pacientes/``` y
 }
 ```
 
-Veremos que nos devuelve el mismo objeto con staus 201, es decir que lo ha creado con éxito. Podemos comprobar que no hizo falta crear la base de datos ni la colección previamente, mongoose ya se ha encargado de todo.
+Si todo a ido bien, veremos que nos devuelve el mismo objeto con status 201, es decir que lo ha creado con éxito. Podemos comprobar que no ha hecho falta crear la base de datos ni la colección previamente, mongoose ya se ha encargado de todo. Ahora puedes seguir jugando y metaer unos cuantos documentos más cambiando el body por otros datos a tu gusto.
 
-De la misma forma, si hacemos un get a ```localhost:4000/pacientes``` veremos que nos trae todos los documentos que se han creado, a estas alturas si no has hecho más pruebas solo tendrás el correspondiente a nuestro amigo Charles Manson. Otra cosa que podemos comprobar es que mongo le ha añadido un id del tipo UUID (Universal Unique identifier), nosotros en ningún momento le hemos indicado que el documento lo tenga, eso lo hace mongo, aunque siempre tenemos la posibilidad de forzarlo a lo que nosotros queramos, pero eso ya es un tema que afecta a como se utiliza mongo y este tutorial no es para eso.
+Vamos a comprobar que efectivamente tenemos el documento guardado. Si hacemos un get a ```localhost:4000/pacientes``` veremos que nos trae todos los documentos que se han creado. También podemos comprobar que mongo le ha añadido un id del tipo UUID (Universal Unique identifier), nosotros en ningún momento le hemos indicado que el documento lo tenga, eso lo hace mongo por si mismo, aunque siempre tenemos la posibilidad de forzarlo a lo que nosotros queramos, pero eso ya es un tema que afecta a como se utiliza mongo y este tutorial no es para eso, unos párrafos más atrás tienes el link a la documentación de mongoose.
 
-Podemos probar con todos los endpoints y ver que hacen lo que tienen que hacer
+por último podemos probar con todos los endpoints que nos hemos creado y ver que hacen lo que tienen que hacer y eso es todo ya tienes funcionando un backend javascript con mongo, node y express.
 
 #### conclusiones Backend
 
-Respecto al backend, esto es todo lo que hay que hacer. Podemos complicarlo todo lo que queramos, añadir más modelos de datos, controladores más complejos, más endpoints, pero no difieren para nada de lo que ya hemos visto. Y, si lo piensas, todo lo que hemos visto es un backend en javascript, y aunque en el siguiente paso lo aplicaremos con componentes Angular, en realidad nada impide que lo utilices con cualquier otro Frontend.
+Respecto al backend, esto es todo lo que hay que hacer. Podemos complicarlo todo lo que queramos, añadir más modelos de datos, controladores más complejos, más endpoints etc., pero todo esto no difieren para nada de lo que ya hemos visto, solo es más azucar al pastel. Y, si lo piensas, todo lo que hemos visto es un backend en javascript puro y duro, y aunque en el siguiente paso lo aplicaremos con componentes Angular, en realidad aun no hemos hecho nada que impida que lo utilices con cualquier otro Frontend, en este momento podríamos utilizar thimeleaf, react, más javascript con html puro, lo que sea.
 
 ### Frontend Angular
 
