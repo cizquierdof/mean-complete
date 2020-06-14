@@ -371,9 +371,9 @@ module.exports = patientController
  ```
 
  Por ejemplo, la primera función que se ha creado en el controlador ```getPatients```, invoca al método *find* que recupera todos los documentos de la colección 'patients'. Este es el caso más sencillo. El método envía dos parámetros 'req' y 'res', el primero es el objeto que se pasa al método y que podemos utilizar para pasar toda clase de parámetros, el segundo 'res' es donde se devolverá la respuesta. En el código que tenemos actualmente al hacer ```Patient.find``` se ejecuta una función de callback que devuelve la lista de pacientes (patients) si todo va bien, o un error (err) si hay algún problema. La respuesta de callback es un operador ternario que nos manda un status 500 y el error en caso de que exista 'err' o en caso contrario, nos devuelve un status 200 y, muy importante, la lista de pacientes en formato json (```.jsonp(patients)```).
- 
+
  en este método podríamos haber utilizado 'req' para pasar un filtro de lo que queremos buscar, ya que una de las cosas que incluye req es el body de la petición le podríamos haber pasado un json para que filtrara por el nombre, por ejemplo, Es decir si en el body de la petición GET le pasamos:
- 
+
  ```json
  {
      "name":"John"
@@ -393,7 +393,7 @@ module.exports = patientController
     },
 ```
 
-Fijate en que el parámetro que le pasamos a 'find' es un json ```{name: req.body.name}```
+Fijate en que el parámetro que le pasamos a 'find' es un json ```{name: req.body.name}```. Con el body anterior, la petición GET nos devolvería todos los documentos que tuvieran como nombre 'John'.
 
 Esta es la mecánica para todos los métodos del controller, para crear un nuevo documento le pasamos como parámetro un patient que creamos con lo que le mandamos en el body de la petición POST, para ver un solo paciente lo hacemos con 'findById' que también pertenece a mongoose; el 'id' se lo pasamos mediante la url y lo recuperamos con req.param.idy de forma similar hacemos para borrar un documento de 'patients' pero con 'remove()' evidentemente con el correspondiente control de errores.
 
