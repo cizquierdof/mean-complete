@@ -39,7 +39,7 @@ docker pull mongo
 docker run -d -p 27017-27019:27017-27019 --name mongodb mongo
 ```
 
-Ya está con esto hemos creado una instancia de mongo llamada mongodb que se está ejecutando en background en el puerto **27017**. Si queremos ver el contenido y manejarlo un poco, podemos descargar [Robo3T](https://robomongo.org/) que es un GUI para mongo al estilo de Workbench para MySQL aunque algo más básico.
+Ya está con esto hemos creado una instancia de mongo llamada mongodb que se está ejecutando en background en el puerto **27017**. Si queremos ver el contenido y manejarlo un poco, podemos descargar [Robo3T](https://robomongo.org/) que es un GUI para mongo al estilo de Workbench para MySQL aunque algo más básico. Una cisa más, aunque parezca obvio, no hay que olvidar poner en marcha el docker para acceder a mongo. Se puede hacer fácilmente desde el plugin de docker de visual studio code o desde el terminal con ```docker run mongodb``` o sustituyendo mongodb por el nombre que le hayas puesto. 
 
 Otra cosa necesaria es, evidentemente Express que instalaremos con npm.
 
