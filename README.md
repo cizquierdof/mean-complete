@@ -97,7 +97,7 @@ app.listen(
 
 > **Nota**: ```require('modulo')``` es la forma que tiene node de importar modulos ya que node es anterior a que apareciera el import de javascript. De la misma forma para exportar se hace con ```module.exports = module_name```
 
-Comprobamos que el servidor funciona. En un terminal escribimos:
+Como 'app' la hemos declarado como un objeto express, ya tiene acceso a sus métodos, ```.listen()``` es el que se utiliza para poner al servidor a la escucha en el puerto que se le especifique, en este caso el 4000; al mismo tiempo a .listen le pasamos una función de callback que podemos utilizar para lo que queramos, en este primer ejemplo solo le decimos que escriba por consola que está funcionando. Comprobemos que el servidor funciona. En un terminal escribimos:
 
 ```shell
 node src\app\backend\server.js
@@ -125,11 +125,11 @@ Ya que tenemos nodemon instalado podemos hacer que se quede esperando a los camb
   },
   ```
 
-VS code nos mostrará una nueva entrada en la sección NPM SCRIPTS llamada servidor que podemos utilizar para poner en marcha el servidor. Atento a la ruta si no lo has puesto en el mismo sitio que yo.
+VS code nos mostrará una nueva entrada en la sección NPM SCRIPTS llamada servidor que podemos utilizar para poner en marcha el servidor. Atento a la ruta, es relativa a la carpeta principal de la aplicación.
 
 #### Añadiendo rutas
 
-Hasta ahora el servidor no nos contesta nada porque no sabe a donde ir, para que lo sepa debemos ponerle rutas o endpoints, es decir sitios a los que puede ir para dar alguna respuesta. Los endpoints en express se crean de la forma siguiente. si suponemos que app es nuestra aplicación express haremos:
+Hasta ahora el servidor no nos contesta nada porque no sabe a donde ir, para que lo sepa debemos ponerle rutas o 'endpoints', es decir sitios a los que puede ir para dar alguna respuesta. Los endpoints en express se crean de la forma siguiente.
 
 ```shell
 app.METHOD(PATH, HANDLER)
@@ -144,7 +144,7 @@ Donde:
 
 Para ver más sobre el direccionamiento básico de express se puede consultar <https://expressjs.com/es/starter/basic-routing.html.>
 
-Para añidir rutas vamos a utilizar otro fichero al que llamaremos routes.js (por ejemplo) y como es posible que se necesiten varios de estos en función del tamaño de la aplicación lo pondremos en su propia carpeta /routes. Dentro voy a definir un par de rutas que nos devolverán cosas distintas
+Para añadir rutas vamos a utilizar otro fichero al que llamaré routes.js (por ejemplo) y como es posible que se necesiten varios de estos en función del tamaño de la aplicación se considera una buena práctica ponerlos en su propia carpeta, por ejemplo /routes. Dentro del fichero voy a definir un par de rutas que nos devolverán cosas distintas. El método ```.get()``` es otro método de expres que lanza una petición HTTP GET, como la anterior .listen(), .get() utilza el mismo patrón de parámetro, función de callback. En este caso el parámetro es la ruta y el callback define las acciones que se ejecutarán cuando se invoque esta ruta. En este sencillo ejemplo lo único que hacemos es devolver un status 200 y enviar algo al body de la página. Como podemos ver esto puede ser un simple texto o un html completo.
 
 - routes.js
 
@@ -157,7 +157,7 @@ router.get('/',
 );
 
 router.get('/hola',
-    (req, res) => res.status(200).send('<h1>Hola otra vez</h1>')
+    (req, res) => res.status(200).send('<h1>Hola desde otro sitio</h1>')
     );
 
 module.exports = router;  //exportamos el router
@@ -196,7 +196,7 @@ router.get('/new',
 module.exports = router;  //exportamos el router
 ```
 
-Podemos ver que tiene el mismo aspecto que el routes anterior, las rutas al raiz '/' nos devolverán supuestamente la lista de pacientes, mientras que las dirigidas a '/new' nos crearán un nuevo paciente. Esto también lo tenemos que mandar a app.js para que entienda las nuevas rutas.
+Podemos ver que tiene el mismo aspecto que el routes anterior, las rutas al raiz '/' nos devolverán supuestamente la lista de pacientes, mientras que las dirigidas a '/new' nos crearía un nuevo paciente. Esto también lo tenemos que mandar a app.js para que entienda las nuevas rutas.
 
 - app.js
 
@@ -248,12 +248,14 @@ db.connect('mongodb://localhost:27017/hospital').then(
 )
 ```
 
-Podemos ver que para conectar con mongo es una cadena de conexion. Recordemnos que la instancia docker de mongo la habiamos llamado *mongodb* y que estaba en el puerto 27107, así que para conectar necesitamos la cadena ```'mongodb://localhost:27017/hospital'```. después si no hay ningún problema la respuesta de la promesa pondrá a la instancia app de express a la escucha en el puerto 4000 apuntando a un esquema o base de datos llamado hospital. En principio podemos tener creado o no el esquema hospital. Si ya está creado lo utilizará, si no, en cuanto creemos el primer documento, creaará también el esquema, así que de momento n9o tenemos que hacer nada en absoluto. Simplemente tenemos a nuestra aplicación esperando acontecimientos desde el puerto 4000.
+Podemos ver que para conectar con mongo es una cadena de conexion. Recordemnos que la instancia docker de mongo la habiamos llamado *mongodb* y que estaba en el puerto 27107, así que para conectar necesitamos la cadena ```'mongodb://localhost:27017/hospital'```. después si no hay ningún problema la respuesta de la promesa pondrá a la instancia app de express a la escucha en el puerto 4000 apuntando a un esquema o base de datos llamado hospital. En principio podemos tener creado o no el esquema hospital. Si ya está creado lo utilizará, si no, en cuanto creemos el primer documento, creaará también el esquema, así que de momento no tenemos que hacer nada en absoluto. Simplemente tenemos a nuestra aplicación esperando acontecimientos desde el puerto 4000.
 Con esto ya tenemos las bases para el backend de la aplicación.
 
 #### Model, endpoint y controller
 
-Si queremos manejar datos, lo primero que debemos tener es un modelo de datos. Como se dijo al principio nuestros datos son pacientes y sus patologías, así que creamos una carpeta */models* y en ella un archivo patient.js donde definimos la estructura de datos. Cuidado, esto es una estructura de datos de mongo, así que lo que tenemos que crear no es un objeto javascript plano, sino un schema mongoose. En realida son muy parecidos pero mongoose requiere que se haga así. nuestro modelo de datos queda:
+Si queremos manejar datos, lo primero que debemos tener es un modelo de datos. Como se dijo al principio nuestros datos son pacientes y sus patologías, así que creamos una carpeta */models* y en ella un archivo patient.js donde definimos la estructura de datos.
+
+Como indica la documentación, en mongoose todo comienza con un schema. el schema es la definición del modelo de datos que va a utilizar mongoose para acceder a mongo, después partiendo de este esquema mongoose utilizará un objeto model para las transacciones. El schema se define así:
 
 - patient.js
 
@@ -268,7 +270,7 @@ const patientSchema = mongoose.Schema(
         pathologies: [String]
     }
 )
-// y lo exportamos, observa que la exportación es algo diferente de lo normal
+// y lo exportamos, observa que en realida lo que exportamos es el model de mongoose no el schema
 module.exports = mongoose.model("Patient", patientSchema);
 ```
 
