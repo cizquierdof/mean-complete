@@ -1,18 +1,10 @@
 # Mean Completo
 
-Ejemplo de aplicación full-stack con Mongo, Express, Angular y Node. En este tutorial construiremos una aplicación que utiliza como servidor, Express ejecutado desde Node, como base de datos, Node y como FrontEnd Angular.
-
-## Reconocimientos
-
-Aunque el desarrollo me lo he currado yo solito y el texto aun más y han sido unas cuantas horas, es justo reconocer que buena parte del código, de hecho la mayor parte, sale de las fántasticas clases que nos está dando Nuestro profe Alfonso Tienda, dentro del curso patrocinado por la ONCE en Valencia para formar programadores de aplicaciones web. Alfonso es un mágnifico profesor y la verdad es que ha cogido a unos cuantos ignorantes de la programación y en apenas unos meses, nos está llevando a unos niveles que, creo, se empiezan a acercar a la profesionalidad, aunque sea a nivel junior.
-
-Así que desde aquí mi más sincero agradecimiento a Alfonso por su generosidad y a la ONCE por ofrecernos esta increible oportunidad. En el supuesto caso de que esta guia pueda servir para algo, creo que es justo reconocer esta deuda contraida.
-
-Y sin más vamos al turrón.
+Ejemplo de aplicación full-stack con Mongo, Express, Angular y Node. En este tutorial construiré una aplicación que utiliza como servidor, Express ejecutado desde Node, como base de datos, Node y como FrontEnd Angular.
 
 ## El Backend
 
-El supuesto es que hacemos una aplicación que maneja datos de pacientes de un hospital. Para no complicarnos demasiado, en esta base de datos vamos a guardar solo el nombre, apellidos y un array de patologías que sufre el paciente. Representado esto como un json sería:
+El supuesto es una aplicación que maneja datos de pacientes de un hospital. Para no complicarnos demasiado, en la base de datos vamos a guardar solo el nombre, apellidos y un array de strings con las patologías que sufre el paciente. Representando esto como un json sería por ejemplo:
 
 ```json
 {
@@ -27,48 +19,44 @@ El supuesto es que hacemos una aplicación que maneja datos de pacientes de un h
 }
 ```
 
-### Dependencias
+### Instalación y dependencias
 
-Por comodidad partimos creando una aplicación Angular utilizando el CLI de Angular ya que esto nos descarga los node modules, inicializa el git y crea un package.json, a la aplicación la voy a llamar *mean-completo*, ¡sí, no soy muy original!.
+Por comodidad parto creando una aplicación utilizando el CLI de Angular ya que esto nos descarga los node modules, inicializa el git y crea un package.json, así me ahorro eltrabajo de crearlo manualmente. A la aplicación la voy a llamar *mean-completo*, ¡sí, no soy muy original!.
 
 ```shell
 ng new mean-completo
 ```
 
-Cuando pregunte le diremos que sí vamos a utilizar router y usaremos css plano.
+Cuando lo pregunte, le diremos que sí que vamos a utilizar router y también le diré que use css plano.
 
 Más cosas que necesitaremos.
 
-Lo primero es Mongo, en mi caso voy a utilizar un mongo que tengo instalado en docker. La instalación de mongo no es parte de estos apuntes y mucho menos el uso de docker, pero es fácil encontrar documentación. Sin embargo para efectos de esta aplicación, la elección de mongo en docker es extremadamente sencilla. Solo necesitamos instalar docker y el pluguin de docker para visual studio code. una vez instalado docker, lo ponemos en marcha y después desde consola hacemos:
+Lo primero es Mongo, en mi caso voy a utilizar un mongo instalado en docker. La instalación de mongo no es parte de estos apuntes y mucho menos el uso de docker, pero es fácil encontrar documentación en internet. Sin embargo para efectos de esta aplicaciónb y dado que utilizo Windows, creo que la elección de mongo en docker es extremadamente sencilla. Solo necesitamos instalar [docker](https://www.docker.com/get-started) y el pluguin de docker para visual studio code, Ambas cosas se completan con suma facilidad, Dockere se instala como cualquier otro programa windows y el plugin solo hay que buscarlo y pinchar en instalar. Procedemos así; primero instalamos docker y el plugin, después ponemos en marcha docker.Esperamos que arranque, tarda un poco, cuando lo haga desde un terminal hacemos:
 
 ```shell
 docker pull mongo
 docker run -d -p 27017-27019:27017-27019 --name mongodb mongo
 ```
 
-Ya está con esto hemos creado una instancia de mongo llamada mongodb que se está ejecutando en background en el puerto **27017**. Si queremos ver el contenido y manejarlo un poco, podemos descargar [Robo3T](https://robomongo.org/) que es un GUI para mongo al estilo de Workbench para MySQL aunque algo más básico.
+Lo primero crea un docker con la última versión de mongo, lo segundo crea y ejecuta un contenedor llamado mongodb en los puertos 27017 a27019 que son los puertos de mongo por defecto. Posteriormente ya tendremos este contenedor en la lista de contenedores del plugin de VS Code y lo podremos arrancar desde ahí las próximas veces. Recuerda arrancar antes docker si no lo tienes con arranque automático antes de arrancar el contenedor.
 
-Otra cosa necesaria es, evidentemente Express que instalaremos con npm.
+ Si queremos ver el contenido de mongo y manejarlo un poco, es bastante conveniente descargar [Robo3T](https://robomongo.org/) que es un GUI para mongo al estilo de Workbench para MySQL aunque algo más básico.
+
+Siguiendo con la instalación, otra cosa necesaria es, evidentemente [Express](https://expressjs.com/) que instalaremos con npm. Express es un servidor web minimalista que se ejecuta en node.
 
 ```shell
 npm i -s express
 ```
 
-Otra cosa que se necesitaba antes de la versión 4.16 de express era body-parser, sin embargo a partir de esa versión ya no es necesario.
+Otra cosa que se necesitaba antes de la versión 4.16 de express era body-parser, sin embargo a partir de esa versión ya no es necesario, esto lo comento aquí porque esta versión es bastante reciente en el momento de escribir esto y en la mayoría de tutorials que se encuentran por ahí dirán que su instalación es obligatoria.
 
-Para tratar con mongo desde express se necesita también la librería mongoose que también instalamos con npm
+Para tratar con mongo con javascript se necesita también la librería mongoose. La instalaremos con npm
 
 ```shell
 npm i -s mongoose
 ```
 
-Aunque en producción se hará de otra manera, en desarrollo, el servidor de la base de datos y el servidor web no proceden de la misma fuente, es decir responden desde direcciones o pùertos diferentes; esto en teoría está estrictamente prohibido por seguridad, sin embargo para desarrollo podemos saltarnoslo mediante la librería *cors* que también instalamos con npm.
-
-```shell
-npm i cors
-```
-
-Por último para no tener que estar levantando a cada cambio de código al servidor web se suele utilizar nodemon que detecta los cambios y reinicia la aplicación para que refleje dichos cambios. Como es una utilidad que se usa muy frecuentemente en toda clase de proyectos, lo normal y recomendable es instalarla globalmente.
+Por último para no tener que estar levantando a cada cambio de código al servidor web se suele utilizar [nodemon](https://www.npmjs.com/package/nodemon) que detecta los cambios y reinicia la aplicación para que refleje dichos cambios. Como es una utilidad que se usa muy frecuentemente en toda clase de proyectos, lo normal y recomendable es instalarla globalmente.
 
 ```shell
 npm i -g nodemon
@@ -78,9 +66,9 @@ npm i -g nodemon
 
 #### Servidor web
 
-Empezamos configurando el servidor web con express. Tradicionalmente se crea una aplicación express en un fichero (app.js) y un servidor que la lanza y se queda a la escucha en otro fichero (server.js), los nombres no son obligatorios pero es costumbre llamarlos así.
+Empezamos configurando el servidor web con express. Tradicionalmente se crea una aplicación express en un fichero (app.js) y un servidor que la lanza y se queda a la escucha en otro fichero (server.js), los nombres no son obligatorios pero es costumbre llamarlos así. También se puede poner todo en un mismo fichero, es cuestión de gustos. Yo lo voy a dejar en dos ficheros separados porque a efectos de explicar como funciona es más claro.
 
-Voy separar el backend del resto de la aplicación angular poniendo todo lo necesario para este en una carpeta llamada backend.
+También voy separar el backend del resto de la aplicación angular poniendo todo lo necesario para éste en una carpeta llamada backend.
 
 La configuración mínima que tienen estos dos ficheros de los que hablabamos es:
 
@@ -107,21 +95,21 @@ app.listen(
 )
 ```
 
-> **Nota**: ```require('modulo')``` es la forma que tiene node de importar modulos ya que node es anteriro a que apareciera el import de javascript. De la misma forma para exportar se hace con ```module.exports = module_name```
+> **Nota**: ```require('modulo')``` es la forma que tiene node de importar modulos ya que node es anterior a que apareciera el import de javascript. De la misma forma para exportar se hace con ```module.exports = module_name```
 
-si ahora hacemos:
+Comprobamos que el servidor funciona. En un terminal escribimos:
 
 ```shell
 node src\app\backend\server.js
 ```
 
-obtenemos la respuesta
+Recordemos que tenemos node en la carpeta principal del proyecto, pero el servidor está en otra carpeta, por eso hay que añadir la ruta. Deberíamos obtener la respuesta:
 
 ```shell
 servidor funcionando
 ```
 
- y si en un navegador ponemos la dirección localhost:4000 en vez de darnos un error 404 nos contestará *cannot /get*, esto quiere decir que hay un servidor que contesta aunque no sepa que contestar porque todavía no lo hemos configurado.
+ También podemos comprobar desde un navegador; ponemos la dirección localhost:4000 y en vez de darnos un error 404 no encontrado, nos contestará *cannot /get*, esto quiere decir que hay un servidor que contesta aunque no sepa que contestar porque todavía no lo hemos configurado.
 
 Ya que tenemos nodemon instalado podemos hacer que se quede esperando a los cambios que se hagan en el código, además dentro de package.json podemos añadir una entrada en los scripts para que nos lo ejecute de forma directa sin tener que escribirlo cada vez en el terminal, en mi caso he llamado a esta entrada *'servidor'*. La sección de scripts quedará de la siguiente forma:
 
